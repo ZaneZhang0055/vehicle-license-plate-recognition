@@ -7,12 +7,12 @@ from PIL import Image
 import torchvision.transforms as transforms
 
 # ==========================================
-# 0. 核心路径配置区
+#
 # ==========================================
 IMAGE_DIR_PATH = r"d:\CS183\新建文件夹 (4)"
 
 # ==========================================
-# 1. 完整配置与工业级字典
+# 1. Complete configuration and industrial-grade dictionary
 # ==========================================
 CHARS = [
     "<Blank>",
@@ -32,7 +32,7 @@ NUM_CLASSES = len(CHARS)
 BLANK_INDEX = 0
 
 # ==========================================
-# 2.CRNN = 深卷积层 + Dropout
+# 2.CRNN = Deep Convolutional Layer + Dropout
 # ==========================================
 class CRNN(nn.Module):
     def __init__(self):
@@ -61,7 +61,6 @@ class CRNN(nn.Module):
         )
 
         # --------------------------
-        # 关键维度正确！！！
         # --------------------------
         self.rnn = nn.LSTM(input_size=1024, hidden_size=256, bidirectional=True)
         self.dropout = nn.Dropout(0.2)
@@ -78,7 +77,7 @@ class CRNN(nn.Module):
         return output
 
 # ==========================================
-# 3. 数据集
+# 3.Dataset
 # ==========================================
 class RealDataset(Dataset):
     def __init__(self, img_dir):
@@ -86,7 +85,7 @@ class RealDataset(Dataset):
         self.data = []
 
         if not os.path.exists(img_dir):
-            raise FileNotFoundError(f"🚨 找不到图片文件夹！路径：{img_dir}")
+            raise FileNotFoundError(f"no found：{img_dir}")
 
         valid_extensions = ('.jpg', '.jpeg', '.png', '.bmp')
         for filename in os.listdir(img_dir):
@@ -95,14 +94,14 @@ class RealDataset(Dataset):
                 self.data.append((filename, text))
 
         self.transform = transforms.Compose([
-            transforms.Resize((32, 128)),  # 保持我们之前修改的正确尺寸
+            transforms.Resize((32, 128)),  #Modify recognition size
             
-            # 👇👇👇 新增的数据增强模块 👇👇👇
-            # 1. 颜色抖动：随机改变亮度、对比度、饱和度（模拟不同天气和光线）
+            #  Number of newly added data augmentation modules
+            # 1. Color jitter: Randomly change brightness, contrast, and saturation (simulate different weather and lighting)
             transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4),
-            # 2. 随机轻微旋转：模拟摄像头没对正的情况（正负3度以内）
+            # 2. Random slight rotation: simulates the situation where the camera is not properly aligned (within ±3 degrees)
             transforms.RandomRotation(degrees=3),
-            # 👆👆👆 新增的数据增强模块 👆👆👆
+            # New data augmentation module 
             
             transforms.ToTensor(),
             transforms.Normalize((0.5,), (0.5,))
@@ -116,12 +115,12 @@ class RealDataset(Dataset):
         raw_image = Image.open(img_path).convert('L')
         image_tensor = self.transform(raw_image)
         
-        # 提取目标标签，并过滤掉字典里没有的字符
+        # Extract target tags and filter out characters that are not in the dictionary
         target = [char_to_id[c] for c in text if c in char_to_id]
         
-        # --- 加上这段安全检查 ---
+       
         if len(target) == 0:
-            print(f"⚠️ 警告: 图片 {img_name} 没有提取到任何有效的车牌字符，请检查文件名！")
+            print(f"Warning: No valid license plate characters were extracted from the image {img_name}, please check the file name!")
         # ------------------------
         
         return image_tensor, torch.LongTensor(target), len(target)
@@ -134,7 +133,7 @@ def collate_fn(batch):
     return images, targets, target_lengths
 
 # ==========================================
-# 4. 解码器
+# 4. Decoder
 # ==========================================
 def decode(preds):
     _, max_indices = torch.max(preds, dim=1)
@@ -147,13 +146,10 @@ def decode(preds):
         prev_idx = idx
     return "".join(char_list)[:8]
 # ==========================================
-# 5. 训练
-# ==========================================
-# ==========================================
-# 5. 训练
+# 5.practice
 # ==========================================
 if __name__ == "__main__":
-    print(" 正在初始化模型和数据...")
+    print(" Initializing model and data...")
     model = CRNN()
     dataset = RealDataset(img_dir=IMAGE_DIR_PATH)
     bs = min(32, len(dataset))
@@ -162,7 +158,7 @@ if __name__ == "__main__":
     criterion = nn.CTCLoss(blank=BLANK_INDEX, zero_infinity=True)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
 
-    print(f"\n 开始训练 (当前包含 {len(dataset)} 张图片)...")
+    print(f"\n Start training (currently contains {len(dataset)} images)...")
 
     for epoch in range(1, 151):
         model.train()
@@ -177,8 +173,8 @@ if __name__ == "__main__":
             total_loss += loss.item()
 
         if epoch % 10 == 0:
-            print(f"第 {epoch} 轮, 平均误差(Loss): {total_loss / len(dataloader):.4f}")
+            print(f"Round {epoch}, Average Error (Loss): {total_loss / len(dataloader):.4f}")
 
-    # ===== 新增的保存权重代码 =====
+    # ===== Newly added code for saving weights =====
     torch.save(model.state_dict(), "crnn_weights.pth")
-    print(" 训练完成，模型权重已保存为 crnn_weights.pth")
+    print(" Training completed, model weights have been saved as： crnn_weights.pth")
