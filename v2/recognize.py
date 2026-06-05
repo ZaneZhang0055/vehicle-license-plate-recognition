@@ -60,7 +60,7 @@ if __name__ == "__main__":
         exit(1)
 
     # 2. Specify the absolute path of the folder for batch recognition
-    # 👇👇👇 Please replace with your actual test image folder path 👇👇👇
+    #  Please replace with your actual test image folder path 
     test_folder ="images3"
     
     print("-" * 55)
