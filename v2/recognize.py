@@ -2,20 +2,18 @@ import torch
 from PIL import Image
 import torchvision.transforms as transforms
 import os
-
-# 原文件中导入模型结构和解码函数
 from LicensePlate import CRNN, decode
 
 class PlateRecognizer:
     def __init__(self, weight_path="crnn_weights.pth"):
         """
-        初始化识别器，加载模型和权重
+        Initialize the recognizer, load the model and weights
         """
-        print(" 正在加载模型架构...")
+        print(" Loading model architecture...")
         self.model = CRNN()
         
         if not os.path.exists(weight_path):
-            raise FileNotFoundError(f" 找不到权重文件 {weight_path}！请先运行 LicensePlate.py 训练并保存模型。")
+            raise FileNotFoundError(f" Cannot find the weight file {weight_path}！Please run first LicensePlate.py Train and save the model。")
             
         print("正在加载训练好的权重...")
         self.model.load_state_dict(torch.load(weight_path, map_location=torch.device('cpu')))
