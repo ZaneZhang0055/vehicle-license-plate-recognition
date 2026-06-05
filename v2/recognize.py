@@ -30,7 +30,7 @@ except Exception as e:
 print(e)        
 exit(1)
     # 2. Specify the absolute path of the folder for batch recognition    
-# 👇👇👇 Please replace with your actual test image folder path 👇👇👇
+# Please replace with your actual test image folder path 
     test_folder = r"D:\CS183\test"         
 print("-" * 55)        
 if not os.path.exists(test_folder):        
