@@ -22,7 +22,7 @@ class PlateRecognizer:
         self.model.eval() 
         
         self.transform = transforms.Compose([
-            transforms.Resize((32, 100)),
+            transforms.Resize((32, 128)),
             transforms.ToTensor(),
             transforms.Normalize((0.5,), (0.5,))
         ])
